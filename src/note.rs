@@ -4,8 +4,9 @@ use diesel::pg::PgConnection;
 use models::*;
 use diesel::prelude::*;
 use schema::notes;
+use uuid::Uuid;
 
-pub fn get_note(conn: &PgConnection, id: i32) -> Result<Note, Error> {
+pub fn get_note(conn: &PgConnection, id: Uuid) -> Result<Note, Error> {
     notes::table
         .find(id)
         .first::<Note>(conn)
@@ -23,12 +24,12 @@ pub fn create_note(conn: &PgConnection, note: NoteData) -> Result<Note, Error> {
 }
 
 
-pub fn delete_note(conn: &PgConnection, id: i32) -> Result<usize, Error> {
+pub fn delete_note(conn: &PgConnection, id: Uuid) -> Result<usize, Error> {
     diesel::delete(notes::table.find(id))
         .execute(conn)
 }
 
-pub fn update_note(conn: &PgConnection, id: i32, updated_note: NoteData) -> Result<Note, Error> {
+pub fn update_note(conn: &PgConnection, id: Uuid, updated_note: NoteData) -> Result<Note, Error> {
     diesel::update(notes::table
         .find(id))
         .set(&updated_note)

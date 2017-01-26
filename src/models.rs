@@ -5,11 +5,12 @@ use rocket::http::Status;
 use rocket::Outcome::*;
 use serde_json;
 use rocket_contrib::JSON;
+use uuid::Uuid;
 
 #[derive(Queryable)]
 #[derive(Serialize,Deserialize)]
 pub struct Note {
-    pub id: i32,
+    pub id: Uuid,
     pub title: String,
     pub body: String,
     pub pinned: bool,
