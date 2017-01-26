@@ -16,7 +16,7 @@ pub struct Note {
     pub pinned: bool,
 }
 
-#[derive(Insertable, Deserialize, AsChangeset)]
+#[derive(Insertable, Serialize, Deserialize, AsChangeset)]
 #[table_name="notes"]
 pub struct NoteData {
     pub title: String,

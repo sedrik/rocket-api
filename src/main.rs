@@ -81,3 +81,31 @@ fn note_delete(db: DB, id: &str) -> Result<NoContent, Error> {
 fn main() {
     rocket::ignite().mount("/", routes![note_create, notes_get, note_delete, note_edit, note_get]).launch();
 }
+
+#[cfg(test)]
+mod test_api {
+  use super::rocket;
+  use rocket::testing::MockRequest;
+  use rocket::http::{ContentType, Status, Method};
+  use super::{Note, NoteData};
+  use super::serde_json;
+  use std::fmt::Display;
+
+  #[test]
+  fn create_user_test() {
+	  let rocket = rocket::ignite().mount("/", routes![super::note_create]);
+	  let mut req = MockRequest::new(Method::Post, "/notes")
+		  .header(ContentType::JSON)
+		  .body(serde_json::to_string(&NoteData {title: "title".into(), body: "body".into(), pinned: false }).unwrap());
+	  let mut response = req.dispatch_with(&rocket);
+	  assert_eq!(response.status(), Status::Ok);
+	  // TODO assert_eq!(response.status(), Status::Created);
+
+	  let body_string = response.body().and_then(|b| b.into_string());
+      let created: Note = serde_json::from_str(body_string.unwrap().as_str()).unwrap();
+
+      assert_eq!(created.title, "title");
+      assert_eq!(created.body, "body");
+      assert_eq!(created.pinned, false);
+  }
+}
