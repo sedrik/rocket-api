@@ -26,7 +26,7 @@ use db::DB;
 use note::{get_notes, get_note, create_note, delete_note, update_note};
 use models::*;
 use rocket_contrib::JSON;
-use rocket::response::status::NoContent;
+use rocket::response::status::{Created, NoContent};
 use rocket::request::FromParam;
 use diesel::result::Error;
 use uuid::Uuid;
@@ -51,10 +51,13 @@ fn note_get(db: DB, id: &str) -> Result<JSON<Note>, Error> {
 }
 
 #[post("/notes", format = "application/json", data = "<note>")]
-fn note_create(db: DB, note: NoteData) -> Result<JSON<Note>, Error> {
+fn note_create(db: DB, note: NoteData) -> Result<Created<JSON<Note>>, Error> {
     let created_note = create_note(db.conn(), note);
     match created_note {
-        Ok(note) => Ok(JSON(note)),
+        Ok(note) => {
+            let url = format!("/note/{}", note.id);
+            Ok(Created(url, Some(JSON(note))))
+        },
         Err(err) => Err(err),
     }
 }
@@ -98,8 +101,7 @@ mod test_api {
 		  .header(ContentType::JSON)
 		  .body(serde_json::to_string(&NoteData {title: "title".into(), body: "body".into(), pinned: false }).unwrap());
 	  let mut response = req.dispatch_with(&rocket);
-	  assert_eq!(response.status(), Status::Ok);
-	  // TODO assert_eq!(response.status(), Status::Created);
+	  assert_eq!(response.status(), Status::Created);
 
 	  let body_string = response.body().and_then(|b| b.into_string());
       let created: Note = serde_json::from_str(body_string.unwrap().as_str()).unwrap();
